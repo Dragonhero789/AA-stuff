@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+body {
+    font-family: Arial, sans-serif;
+    background-color: lightblue;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+.menu-container {
+  border: 2px solid #333;
+  padding: 20px;
+  width: 300px;
+  margin: 20px auto;
+  background-color: #fff;
+  text-align: center;
+}
+
+#roll-trait-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+#roll-trait-button:hover {
+  background-color: #45a049;
+}
+
+#trait-result {
+  margin-top: 20px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+/* Confirmation dialog style */
+#confirmation-dialog {
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+}
+
+#confirmation-dialog button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  margin: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+#confirmation-dialog button:hover {
+  background-color: #45a049;
+}
+
+/* Animation for rare trait results */
+@keyframes flash {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.flash-animation {
+  animation: flash 1s ease-in-out;
+}
+.shiny {
+    color: gold;
+    text-shadow: 
+        0 0 5px rgba(255, 255, 255, 0.5),
+        0 0 10px rgba(255, 255, 255, 0.5),
+        0 0 15px rgba(255, 255, 255, 0.5),
+        0 0 20px rgba(255, 215, 0, 0.7),
+        0 0 30px rgba(255, 215, 0, 0.7),
+        0 0 40px rgba(255, 215, 0, 0.7),
+        0 0 50px rgba(255, 215, 0, 0.7),
+        0 0 75px rgba(255, 215, 0, 0.7);
+    font-weight: bold;
+}
+
+
+
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anime Adventures</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Anime Adventures</h1>
+        <button id="rollButton">Summon</button>
+        <div id="result" class="result"></div>
+    </div>
+
+  
+  
+  <!-- Mythic Warning -->
+<div id="mythic-warning" style="display: none; background-color: #ffcc00; padding: 10px; border-radius: 5px; color: black;">
+    <strong>Warning!</strong> You rolled a Mythic unit! Proceed with caution.
+</div>
+
+  
+<!-- Trait Rolling Menu -->
+<div class="menu-container" id="trait-roll-menu" style="display: none;">
+  <h2>Trait Rolling</h2>
+  <p>Click to roll for a random trait!</p>
+  <button id="roll-trait-button">Roll for Trait</button>
+  <div id="trait-result">
+    <!-- Trait result will be displayed here -->
+  </div>
+</div>
+
+<!-- Trait Rolling Button -->
+<button id="trait-roll-btn" onclick="toggleTraitRollMenu()">Open Trait Roll Menu</button>
+
+  <!-- Confirmation Dialog for Rare Traits -->
+<div id="confirmation-dialog" style="display: none;">
+  <p style="font-size: 18px;">This trait has a very low chance of appearing. Are you sure you want to roll for it?</p>
+  <button id="confirm-roll-button">Yes, Roll It!</button>
+  <button id="cancel-roll-button">Cancel</button>
+</div>
+
+<!-- Trait Rolling Menu -->
+<div class="menu-container" id="trait-roll-menu" style="display: none;">
+  <h2>Trait Rolling</h2>
+  <p>Click to roll for a random trait!</p>
+  <button id="roll-trait-button">Roll for Trait</button>
+  <div id="trait-result">
+    <!-- Trait result will be displayed here -->
+  </div>
+</div>
+
+  
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+<script>
+// Define units for each rarity
+const units = {
+    Mythic: [
+        "Aizo (Betrayal)", "Aizo (Chrysalis)", "Aizo (Final)", "Aizo (Fusion)",
+        "Akena (Fallen Angel)", "Akin (Contract)", "Aku (Rashamon)", "Akoku (Destruction)",
+        "Albedo (Overseer)", "All Force (Symbol of Peace)", "Angel (Devil)", "Aokijo (Blue Pheasant)",
+        "Archer (Heroic Spirit)", "Ariva (Reaper)", "Asuno (Flash)", "Asushi (Moonlight Beast)",
+        "Avdo (Magician's Red)", "Bakugo (Howitzer)", "Bang (Silver Fang)", "Bell (Argonaut)",
+        "Broke (Soul King)", "Carrot (Sulong)", "Cel (Perfect)", "Chainsaw (Hybrid)", "Chairman Neteru",
+        "Charmi (Sheep)", "Chiko (Trion Prodigy)", "Chuyo (Corruption)", "Conrod (Wizard King)", "Coyote (Primera)",
+        "Crush (Ace)", "Dany (Creation)", "Dark Asto", "Demiurge (Demon Emperor)", "Dezu (Vigilante)",
+        "Emperor Whitehair", "Endeavor (Hellflame)", "Erein (Founder)", "Ermo (Duplicate)", "Eta (One-Eye)",
+        "Evileye (Landfall)", "Ezra (Lightning)", "Fleet Admiral Akano", "Fuji (Admiral)", "Gabimaro (Ascetic Blaze)",
+        "Gas (Toxic)", "Geno (Incinerate)", "Ghacco (Album)", "Ging (Sacred Spear)", "Goko (Ultra)", "Goju (Six Eyes)",
+        "Golden Freezo (Emperor)", "Gone (???)", "Gowthy (Invasion)", "Gray (Devil Slayer)", "Greed (Hunt)",
+        "Griffin (Ascension)", "Guts (Berserk)", "Gyutaru (Moon)", "Haka (Reflection)", "Hanje (Captain)",
+        "Harribu (Shark Empress)", "Hawk (Fierce Wings)", "Haze (Rage)", "Heathcliff (Admin)", "Heavy Weather",
+        "Hido (Immortal Butcher)", "Hime (Ghost)", "Hinamy (Yotsume)", "Ichi (Final Dusk)", "Illy (Homunculus)",
+        "Issai (Boosted Gear)", "Itochi (Susanoo)", "Izu (Demon Snow)", "Jirayo (Toad Sage)", "Jokujo (The World)",
+        "Jolyna (Determination)", "Julio (Wizard King)", "Juozu (Joker)", "Kenpaki (Maniac)", "King (Sloth)",
+        "King Meruam", "Kiro (Bites the Dust)", "Kiroto (Dual)", "Kizume (Tailless Beast)", "Kizzua (Godspeed)",
+        "Klay (Bachelor)", "Kobeno (Scared)", "Koichy (Echoes)", "Komon (Paper Angel)", "Kuneko (Hell-Cat)",
+        "Kyoka (Scarlet Lance)", "Lancer (Child of Light)", "Lao (ROOM)", "Leafy (Sylph)", "Levy Ackman",
+        "Lucky (Thunder Fiend)", "Luffo (Gear IV)", "Madoko (Salvation)", "Mamy (Holy)", "Marada (Founder)",
+        "Mash (Muscles)", "Medae (Witch of Betrayal)", "Megomu (Chimera Shadow)", "Melio (Assault)", "Metal Knight (Arsenal)",
+        "Mirka (Tiger Bunny)", "Mochi Charlot", "Moriu (Shadow Lord)", "Narbera (Battle Maid)", "Natzo (Lightning Dragon Mode)",
+        "Navi (Thief)", "Noel (Valkyrie Armor)", "Noruto (Beast Cloak)", "Noruto (Six Tails)", "Oshy (Idol)",
+        "Peruna (Ghost Princess)", "Pito (Terpsichora)", "Power (Fiend)", "Pride (Day)", "Puchi (Heaven)",
+        "Red Scar (Conqueror)", "Renkoko (ABLAZE)", "Ria (Devil Princess)", "Saber (Promised Sword)", "Saby (Flame Emperor)",
+        "Sayako (Sapphire Blade)", "Senbodu (Buddha)", "Shallta (Bloodfallen)", "Shigaruko (Symbol of Fear)",
+        "Smoka (Hunter)", "Soi Fan (Hornet)", "Sonic (Speed)", "Sosuke (Eternal)", "Stain (Hero Slayer)", "Sukuno",
+        "Super Brulo", "Super Chunks", "Tango (God of Flashiness)", "Tarata (Ignite)", "Tatsumiki (Tornado)",
+        "Thor (Awakened)", "Todorro (Released)", "Toshin (Dragon Lotus)", "Tuna (Reborn)", "Ulquiro (Resurrección)",
+        "Uru (Antithesis)", "Usoap (God)", "Vas (Cross)", "Vegeto", "Vegita (Majin II)", "Vegita (Super II)",
+        "Yamo (Captain)", "Yono (Spirit)", "Yoshina (Spirit)", "Yumo (White Nightmare)"
+    ],
+   
+  
+    Legendary: [
+        "Agony", "Akoku", "Blackhair", "Bulmy", "Cel (Semi-Perfect)", "Chunks", "Dabo", "Erein", "Gajule", "Getan",
+        "Goko (Super)", "Goko Black", "Gone", "Grim Jaw", "Hisova", "Itochi", "JIO", "Jiorno", "Juvy", "Kazeki (Centipede)",
+        "Kazoru", "Magnu", "Mecha Freezo", "Mivawk", "Nightmare Luffo", "Nobaba", "Norro", "Noruto (Demon Cloak)", "Orwin",
+        "Ruki", "Shingo", "Togu", "Touci", "Wenda"
+    ],
+    Rare: [
+        "Aman", "Bakugo", "Dezu", "Goko", "Ichi", "Johna", "Josuka", "Kazeki", "Krillo", "Luffo", "Nezuka", "Noruto",
+        "Sakuro", "Sanjay", "Sosuke", "Tanji", "Urakara", "Usoap", "Vegita" 
+      
+    ],
+    Secret: [ "JIO (Over Heaven)", "Vampire King", "Shadow", "Anz (Overlord)", "Roger (Pirate King)", "Kisoko (Bankai)", "Gilgamesh (King of Heroes)"]
+};
+
+// Define rarity chances
+const rarityChances = {
+    Mythic: 0.009999900000099998,  // Adjusted Mythic chance
+    Legendary: 0.09999900000099998, // Adjusted Legendary chance
+    Rare: 0.8900009999990001,      // Adjusted Rare chance
+    Secret: 0.00001               // Secret chance (1 in 100,000)
+};
+
+// Function to roll the gacha
+function rollGacha() {
+    const roll = Math.random();
+
+    // Corrected rarity assignment based on cumulative probability
+    let rarity;
+    if (roll < rarityChances.Mythic) {
+        rarity = "Mythic";
+    } else if (roll < rarityChances.Mythic + rarityChances.Legendary) {
+        rarity = "Legendary";
+    } else if (roll < rarityChances.Mythic + rarityChances.Legendary + rarityChances.Rare) {
+        rarity = "Rare";
+    } else {
+        rarity = "Secret";
+    }
+
+    // Pick a random unit from the chosen rarity
+    const unit = units[rarity][Math.floor(Math.random() * units[rarity].length)];
+
+    // 1% chance to make the unit shiny
+    const isShiny = Math.random() < 0.01; // 1% chance
+
+    // If the unit is shiny, wrap it in a span with the "shiny" class
+    const shinyUnit = isShiny ? `<span class="shiny">Shiny ${unit}</span>` : unit;
+
+    return { unit: shinyUnit, rarity, isShiny };
+}
+
+
+
+// Function to handle the roll button click
+function handleRoll() {
+    const resultElement = document.getElementById('result');
+    const { unit, rarity, isShiny } = rollGacha();
+
+    // Display the result with or without shiny
+    resultElement.innerHTML = `You got a ${rarity} unit: ${unit}`;
+
+    // If the unit is Mythic or Secret, show a warning
+    if (rarity === "Mythic" || rarity === "Secret") {
+        showMythicWarning(unit, rarity);  // Pass rarity along with the unit name
+    }
+}
+
+
+// Show the mythic warning and disable the roll button
+function showMythicWarning(unit, rarity) {
+    const resultElement = document.getElementById('result');
+    resultElement.innerHTML = `Warning! You rolled a ${rarity} unit: <strong>${unit}</strong>. Rolling is disabled for now.`;
+
+    // Disable the roll button to prevent further rolls
+    document.getElementById('rollButton').disabled = true;
+
+    // Automatically re-enable the roll button after 5 seconds
+    setTimeout(() => {
+        document.getElementById('rollButton').disabled = false;
+        resultElement.innerHTML = `You rolled a ${rarity} unit: <strong>${unit}</strong>. Good Job!`;
+    }, 1000);  // 5000 milliseconds = 5 seconds
+}
+
+// Add event listener to the button
+document.getElementById('rollButton').addEventListener('click', handleRoll);
+
+
+// Trait pool and probabilities
+const traits = [
+  { name: "Superior I", probability: 29.97 },
+  { name: "Superior II", probability: 29.97 },
+  { name: "Superior III", probability: 29.97 },
+  { name: "Nimble I", probability: 24.98 },
+  { name: "Nimble II", probability: 24.98 },
+  { name: "Nimble III", probability: 24.98 },
+  { name: "Range I", probability: 24.98 },
+  { name: "Range II", probability: 24.98 },
+  { name: "Range III", probability: 24.98 },
+  { name: "Adept", probability: 9.99 },
+  { name: "Culling", probability: 5.00 },
+  { name: "Sniper", probability: 2.50 },
+  { name: "Godspeed", probability: 1.00 },
+  { name: "Reaper", probability: 0.80 },
+  { name: "Celestial", probability: 0.36 },
+  { name: "Divine", probability: 0.20 },
+  { name: "Golden", probability: 0.15 },
+  { name: "Unique", probability: 0.10 }
+
+];
+
+// Function to roll a trait
+function rollTrait() {
+  let roll = Math.random() * 259.89; // Random number between 0 and 100
+  let selectedTrait = null;
+  let cumulativeProbability = 0;
+
+  // Loop through traits and check which one corresponds to the rolled value
+  for (const trait of traits) {
+    cumulativeProbability += trait.probability;
+    if (roll <= cumulativeProbability) {
+      selectedTrait = trait.name;
+      break;
+    }
+  }
+
+  // Small chance of getting two traits
+  let extraTrait = null;
+  if (Math.random() < .005) { // 1% chance to roll an extra trait
+    extraTrait = rollTrait(); // Recursively call rollTrait for the second trait
+  }
+
+  return extraTrait ? `${selectedTrait} + ${extraTrait}` : selectedTrait;
+}
+
+// Show the trait result
+function showTraitResult() {
+  const traitResult = rollTrait();
+  const rareTraits = ["Unique", "Golden", "Divine", "Celestial", "Reaper"]; // Rare traits
+
+  // If a rare trait is rolled, ask for confirmation
+  if (rareTraits.some(trait => traitResult.includes(trait))) {
+    showConfirmationDialog(traitResult);
+  } else {
+    document.getElementById("trait-result").textContent = `You rolled: ${traitResult}`;
+  }
+}
+
+// Show confirmation dialog for rare traits
+function showConfirmationDialog(traitResult) {
+  const dialog = document.getElementById("confirmation-dialog");
+  dialog.style.display = "block";
+
+  // Handle the confirmation click
+  document.getElementById("confirm-roll-button").onclick = function() {
+    document.getElementById("trait-result").textContent = `You rolled: ${traitResult}`;
+    dialog.style.display = "none";
+
+     // Check for a rare trait
+  let rareTrait = checkIfRareTrait();
+
+  if (rareTrait) {
+    // Show confirmation modal if the trait is rare
+    confirmationModal.style.display = "flex";
+    
+    // Disable the roll button to prevent further clicks
+    rollButton.disabled = true;
+  } else {
+    // Proceed with the roll if it's not rare
+    performRoll();
+  }
+}
+
+// Function to check if it's a rare trait
+function checkIfRareTrait() {
+  // Assuming you have logic to randomly pick a trait and check its rarity
+  let selectedTrait = getRandomTrait();
+  let rareTraits = ["Godspeed", "Reaper", "Celestial", "Divine", "Golden", "Unique", "Bugged", "Honored"];
+  
+  return rareTraits.includes(selectedTrait.name);
+}
+
+// Handle confirm button in the confirmation modal
+confirmRollButton.addEventListener("click", function() {
+  // Proceed with the roll since user confirmed
+  performRoll();
+
+  // Hide confirmation modal
+  confirmationModal.style.display = "none";
+
+  // Re-enable the roll button
+  rollButton.disabled = false;
+});
+
+// Handle cancel button in the confirmation modal
+cancelRollButton.addEventListener("click", function() {
+  // Hide confirmation modal without rolling
+  confirmationModal.style.display = "none";
+
+  // Re-enable the roll button
+  rollButton.disabled = false;
+});
+
+    // Add the flash animation for rare traits
+    if (traitResult.includes("Unique") || traitResult.includes("Golden")) {
+      document.getElementById("trait-result").classList.add("flash-animation");
+    }
+  };
+
+  // Handle the cancel click
+  document.getElementById("cancel-roll-button").onclick = function() {
+    dialog.style.display = "none";
+  };
+
+
+// Toggle the "Trait Roll Menu"
+function toggleTraitRollMenu() {
+  const menu = document.getElementById("trait-roll-menu");
+  menu.style.display = (menu.style.display === "none" || menu.style.display === "") ? "block" : "none";
+}
+
+// Event listener for the roll button
+document.getElementById("roll-trait-button").addEventListener("click", showTraitResult);
+
+
+//# sourceURL=userscript.js
+</script>
+</body>
+</html>
